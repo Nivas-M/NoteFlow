@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Mongoose schema for database notes
 const noteSchema = new mongoose.Schema(
   {
     title: {
@@ -10,12 +11,10 @@ const noteSchema = new mongoose.Schema(
     },
     body: {
       type: String,
-      required: [true, 'Body is required'],
-      trim: true,
+      default: '',
     },
   },
   {
-    // Mongoose automatically manages createdAt and updatedAt
     timestamps: true,
   }
 );

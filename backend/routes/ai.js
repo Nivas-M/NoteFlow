@@ -1,16 +1,13 @@
 const express = require('express');
 const router  = express.Router();
-const { model } = require('../utils/gemini');
+const { generateAIContent } = require('../utils/gemini');
 
-/* ── Helper ─────────────────────────────────────────────────── */
+// Helper function to call Gemini API
 async function runPrompt(prompt) {
-  const response = await model.generateContent(prompt);
-  return response.response.text().trim();
+  return await generateAIContent(prompt);
 }
 
-// ─────────────────────────────────────────────
-// POST /api/ai/summarize
-// ─────────────────────────────────────────────
+// POST /api/ai/summarize - Summarize note text
 router.post('/summarize', async (req, res) => {
   const trimmed = (req.body.text || '').trim();
   if (trimmed.length < 10)
@@ -18,22 +15,15 @@ router.post('/summarize', async (req, res) => {
 
   try {
     const result = await runPrompt(
-      `You are a summarization assistant. Write a concise 2–3 sentence summary of the following note.
-Output the summary text only — no preamble, no labels, no quotation marks.
-
-Note:
-${trimmed}`
+      `You are a summarization assistant. Write a concise 2–3 sentence summary of the following note. Output only the summary text.\n\nNote:\n${trimmed}`
     );
     res.json({ result });
   } catch (err) {
-    console.error('AI summarize error:', err.message);
     res.status(500).json({ message: 'AI request failed.', error: err.message });
   }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/ai/fix-grammar
-// ─────────────────────────────────────────────
+// POST /api/ai/fix-grammar - Fix spelling and grammar
 router.post('/fix-grammar', async (req, res) => {
   const trimmed = (req.body.text || '').trim();
   if (trimmed.length < 5)
@@ -41,23 +31,15 @@ router.post('/fix-grammar', async (req, res) => {
 
   try {
     const result = await runPrompt(
-      `You are a grammar correction assistant. Correct all grammar, spelling, and punctuation errors in the text below.
-Output only the corrected text — no explanations, no labels, no quotation marks.
-
-Text:
-${trimmed}`
+      `You are a grammar correction assistant. Correct all grammar, spelling, and punctuation. Output only the corrected text.\n\nText:\n${trimmed}`
     );
     res.json({ result });
   } catch (err) {
-    console.error('AI fix-grammar error:', err.message);
     res.status(500).json({ message: 'AI request failed.', error: err.message });
   }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/ai/expand
-// Elaborates on a short idea or rough note
-// ─────────────────────────────────────────────
+// POST /api/ai/expand - Expand rough note draft
 router.post('/expand', async (req, res) => {
   const trimmed = (req.body.text || '').trim();
   if (trimmed.length < 5)
@@ -65,24 +47,15 @@ router.post('/expand', async (req, res) => {
 
   try {
     const result = await runPrompt(
-      `You are a writing assistant. The user has written a short rough note or idea. Expand it into clear, well-structured paragraphs with more detail and context.
-Keep the original meaning. Write in the same perspective as the user.
-Output only the expanded text — no preamble, no labels, no quotation marks.
-
-Note to expand:
-${trimmed}`
+      `You are a writing assistant. Expand the rough note below into structured, clear paragraphs. Output only the expanded text.\n\nNote:\n${trimmed}`
     );
     res.json({ result });
   } catch (err) {
-    console.error('AI expand error:', err.message);
     res.status(500).json({ message: 'AI request failed.', error: err.message });
   }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/ai/action-items
-// Extracts actionable to-do items
-// ─────────────────────────────────────────────
+// POST /api/ai/action-items - Extract task checklist
 router.post('/action-items', async (req, res) => {
   const trimmed = (req.body.text || '').trim();
   if (trimmed.length < 10)
@@ -90,24 +63,15 @@ router.post('/action-items', async (req, res) => {
 
   try {
     const result = await runPrompt(
-      `You are a productivity assistant. Extract all actionable tasks or to-do items from the note below.
-Format each item as a plain bullet starting with "- ". If no clear action items exist, write "- No clear action items found."
-Output only the bullet list — no preamble, no labels, no explanations.
-
-Note:
-${trimmed}`
+      `You are a productivity assistant. Extract all actionable tasks from the note below as plain bullet points starting with "- ". Output only the bullet list.\n\nNote:\n${trimmed}`
     );
     res.json({ result });
   } catch (err) {
-    console.error('AI action-items error:', err.message);
     res.status(500).json({ message: 'AI request failed.', error: err.message });
   }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/ai/make-formal
-// Rewrites note in professional, formal language
-// ─────────────────────────────────────────────
+// POST /api/ai/make-formal - Rewrite note in professional tone
 router.post('/make-formal', async (req, res) => {
   const trimmed = (req.body.text || '').trim();
   if (trimmed.length < 5)
@@ -115,16 +79,45 @@ router.post('/make-formal', async (req, res) => {
 
   try {
     const result = await runPrompt(
-      `You are a professional writing assistant. Rewrite the following text in a clear, formal, and professional tone suitable for a business or academic context.
-Preserve the original meaning. Output only the rewritten text — no preamble, no labels, no quotation marks.
-
-Text:
-${trimmed}`
+      `You are a professional writing assistant. Rewrite the following text in a clear, formal, business tone. Output only the rewritten text.\n\nText:\n${trimmed}`
     );
     res.json({ result });
   } catch (err) {
-    console.error('AI make-formal error:', err.message);
     res.status(500).json({ message: 'AI request failed.', error: err.message });
+  }
+});
+
+// POST /api/ai/translate - Translate note text into target language
+router.post('/translate', async (req, res) => {
+  const trimmed = (req.body.text || '').trim();
+  const targetLanguage = req.body.targetLanguage || 'Spanish';
+  if (trimmed.length < 3)
+    return res.status(400).json({ message: 'Note is too short to translate.' });
+
+  try {
+    const result = await runPrompt(
+      `You are a professional translator. Translate the following text accurately into ${targetLanguage}. Output only the translated text.\n\nText:\n${trimmed}`
+    );
+    res.json({ result });
+  } catch (err) {
+    res.status(500).json({ message: 'AI translation request failed.', error: err.message });
+  }
+});
+
+// POST /api/ai/ask - Ask question grounded in note content
+router.post('/ask', async (req, res) => {
+  const trimmed = (req.body.text || '').trim();
+  const question = (req.body.question || '').trim();
+  if (!trimmed || !question)
+    return res.status(400).json({ message: 'Both note text and a question are required.' });
+
+  try {
+    const result = await runPrompt(
+      `You are an intelligent Q&A assistant. Answer the user's question accurately based strictly on the provided note context below. If the answer is not contained in the note, state that clearly.\n\nNote Context:\n${trimmed}\n\nQuestion:\n${question}`
+    );
+    res.json({ result });
+  } catch (err) {
+    res.status(500).json({ message: 'AI Q&A request failed.', error: err.message });
   }
 });
 

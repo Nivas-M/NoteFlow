@@ -3,10 +3,7 @@ const router = express.Router();
 const Note = require('../models/Note');
 const { fuzzyMatch } = require('../utils/levenshtein');
 
-// ─────────────────────────────────────────────
-// GET /api/notes?search=<query>
-// Returns all notes, or fuzzy-filtered notes if a search query is provided.
-// ─────────────────────────────────────────────
+// GET /api/notes - Fetch all notes or perform fuzzy search
 router.get('/', async (req, res) => {
   try {
     const { search } = req.query;
@@ -17,36 +14,27 @@ router.get('/', async (req, res) => {
     }
 
     const query = search.trim();
-
-    // Run fuzzy match on both title and body for each note.
-    // Threshold of 2 allows up to 2 character edits (typos).
     const THRESHOLD = 2;
 
     const filtered = notes
       .map((note) => {
         const titleResult = fuzzyMatch(query, note.title, THRESHOLD);
         const bodyResult  = fuzzyMatch(query, note.body,  THRESHOLD);
-
         const minDist = Math.min(titleResult.minDistance, bodyResult.minDistance);
         const matched = titleResult.match || bodyResult.match;
-
         return { note, minDist, matched };
       })
       .filter(({ matched }) => matched)
-      // Sort by closeness of match (lower distance = better)
       .sort((a, b) => a.minDist - b.minDist)
       .map(({ note }) => note);
 
     res.json(filtered);
   } catch (err) {
-    console.error('GET /notes error:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/notes/:id  — Fetch a single note
-// ─────────────────────────────────────────────
+// GET /api/notes/:id - Fetch single note by ID
 router.get('/:id', async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -57,17 +45,15 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/notes  — Create a new note
-// ─────────────────────────────────────────────
+// POST /api/notes - Create a new note
 router.post('/', async (req, res) => {
   try {
-    const { title, body } = req.body;
-    if (!title || !body) {
-      return res.status(400).json({ message: 'Title and body are required' });
+    const { title, body = '' } = req.body;
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      return res.status(400).json({ message: 'Title is required' });
     }
 
-    const note = new Note({ title, body });
+    const note = new Note({ title: title.trim(), body: body || '' });
     const saved = await note.save();
     res.status(201).json(saved);
   } catch (err) {
@@ -75,19 +61,17 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// PUT /api/notes/:id  — Update an existing note
-// ─────────────────────────────────────────────
+// PUT /api/notes/:id - Update existing note by ID
 router.put('/:id', async (req, res) => {
   try {
-    const { title, body } = req.body;
-    if (!title || !body) {
-      return res.status(400).json({ message: 'Title and body are required' });
+    const { title, body = '' } = req.body;
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      return res.status(400).json({ message: 'Title is required' });
     }
 
     const updated = await Note.findByIdAndUpdate(
       req.params.id,
-      { title, body },
+      { title: title.trim(), body: body || '' },
       { new: true, runValidators: true }
     );
 
@@ -98,9 +82,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// DELETE /api/notes/:id  — Delete a note
-// ─────────────────────────────────────────────
+// DELETE /api/notes/:id - Delete note by ID
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await Note.findByIdAndDelete(req.params.id);

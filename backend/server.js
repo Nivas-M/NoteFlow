@@ -1,4 +1,7 @@
-require('dotenv').config();
+// Load environment variables from .env
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
 const express  = require('express');
 const mongoose = require('mongoose');
 const cors     = require('cors');
@@ -9,18 +12,18 @@ const aiRouter    = require('./routes/ai');
 const app  = express();
 const PORT = process.env.PORT || 5000;
 
-// ── Middleware ────────────────────────────────
+// Enable CORS and JSON parsing
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
-// ── Routes ────────────────────────────────────
+// API route handlers
 app.use('/api/notes', notesRouter);
 app.use('/api/ai',    aiRouter);
 
-// ── Health check ─────────────────────────────
+// Health check endpoint
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
-// ── Connect to MongoDB, then start server ─────
+// Connect to MongoDB Atlas database and start server
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
