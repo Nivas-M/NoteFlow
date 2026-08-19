@@ -143,7 +143,7 @@ button:focus-visible { outline: 1px solid #00e5c4; outline-offset: 2px; }
 .font-rajdhani { font-family: 'Rajdhani', sans-serif; }
 .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-/* Layout utility classes */
+/* Utility Classes */
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
 .items-center { align-items: center; }
@@ -260,3 +260,38 @@ button:focus-visible { outline: 1px solid #00e5c4; outline-offset: 2px; }
 .hover\:opacity-70:hover { opacity: 0.7; }
 .hover\:opacity-100:hover { opacity: 1; }
 .disabled\:opacity-40:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Mobile Responsive Layout Override */
+@media (max-width: 768px) {
+  .nf-app-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    overflow: hidden !important;
+  }
+  .nf-top-bar {
+    height: auto !important;
+    padding: 8px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .nf-main-workspace {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+  .nf-sidebar-pane, .nf-editor-pane, .nf-ai-pane {
+    width: 100% !important;
+    height: 100% !important;
+    border-right: none !important;
+    border-left: none !important;
+  }
+  .nf-editor-header {
+    padding: 8px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+}

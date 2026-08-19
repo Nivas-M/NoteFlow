@@ -78,6 +78,11 @@ const Icons = {
       <path d="M1 2h9M1 5.5h9M1 9h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="square" />
     </svg>
   ),
+  Back: () => (
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+      <path d="M8 2L3 6.5L8 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" />
+    </svg>
+  ),
 };
 
 // Toast notification popups container
@@ -128,7 +133,7 @@ function ConfirmModal({ onConfirm, onCancel, title }) {
           <button
             onClick={onCancel}
             className="flex-1 py-2 font-orbitron text-xs tracking-widest transition-all hover:bg-opacity-80"
-            style={{ background: '#e8e8d6', color: '#5a5548', border: '1px solid #d8d0c0' }}
+            style={{ background: '#e8e2d6', color: '#5a5548', border: '1px solid #d8d0c0' }}
           >
             CANCEL
           </button>
@@ -337,9 +342,20 @@ export default function App() {
   const [showAI, setShowAI] = useState(true);
   const [editTitle, setEditTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
+  const [mobileTab, setMobileTab] = useState('nodes');
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const titleRef = useRef(null);
   const textareaRef = useRef(null);
   const saveTimerRef = useRef(null);
+
+  // Responsive window resize listener
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth <= 768);
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Add toast notification
   function addToast(message, type = 'success') {
@@ -392,6 +408,12 @@ export default function App() {
 
   const activeNote = notes.find((n) => (n._id === activeId || n.id === activeId)) ?? null;
 
+  // Select note handler with mobile view switch
+  function selectNote(id) {
+    setActiveId(id);
+    if (isMobile) setMobileTab('editor');
+  }
+
   // Create new note in MongoDB Atlas
   async function createNote() {
     try {
@@ -405,6 +427,7 @@ export default function App() {
         setNotes((p) => [newNote, ...p]);
         setActiveId(newNote._id || newNote.id);
         setSearchQuery('');
+        if (isMobile) setMobileTab('editor');
         addToast('New note created', 'success');
       } else {
         addToast('Failed to create note', 'error');
@@ -523,252 +546,315 @@ export default function App() {
   const currentWordCount = wordCount(noteContent);
 
   return (
-    <div className="scanlines" style={{ height: '100vh', width: '100vw', overflow: 'hidden', display: 'grid', gridTemplateColumns: '260px 1fr auto', gridTemplateRows: '40px 1fr', background: '#f5f0e8' }}>
+    <div
+      className="scanlines nf-app-grid"
+      style={{
+        height: '100vh',
+        width: '100vw',
+        overflow: 'hidden',
+        display: 'grid',
+        gridTemplateColumns: '260px 1fr auto',
+        gridTemplateRows: '40px 1fr',
+        background: '#f5f0e8'
+      }}
+    >
       {/* Top bar HUD */}
       <div
-        className="col-span-3 flex items-center px-4 gap-4"
+        className="col-span-3 flex items-center px-4 gap-4 nf-top-bar"
         style={{ borderBottom: '1px solid #d8d0c0', background: '#ede8dd' }}
       >
-        <div className="font-orbitron text-sm tracking-widest" style={{ color: '#1a1a14' }}>
-          NOTE<span style={{ color: '#c0392b' }}>FLOW</span>
+        <div className="font-orbitron text-sm tracking-widest flex items-center gap-2" style={{ color: '#1a1a14' }}>
+          <span>NOTE<span style={{ color: '#c0392b' }}>FLOW</span></span>
+          <span className="font-mono text-xs" style={{ color: '#8a8070' }}>v2.4.1</span>
         </div>
-        <div className="font-mono text-xs" style={{ color: '#8a8070' }}>v2.4.1</div>
+
         <div className="flex-1" />
-        <div className="font-mono text-xs flex items-center gap-2" style={{ color: '#8a8070' }}>
-          <span className="w-1.5 h-1.5 rounded-full pulse-glow" style={{ background: dbStatus === 'CONNECTED' ? '#2e7d52' : '#c0392b', display: 'inline-block' }} />
-          MONGODB ATLAS · {dbStatus}
-        </div>
-        <div className="font-mono text-xs" style={{ color: '#8a8070' }}>
-          {notes.length} NODES
-        </div>
-      </div>
 
-      {/* Left Sidebar */}
-      <div
-        className="flex flex-col overflow-hidden"
-        style={{ borderRight: '1px solid #d8d0c0' }}
-      >
-        {/* Search Bar */}
-        <div className="p-3" style={{ borderBottom: '1px solid #d8d0c0' }}>
-          <div className="flex items-center gap-2 px-3 py-2" style={{ background: '#eae4d8', border: '1px solid #d8d0c0' }}>
-            <span style={{ color: '#8a8070' }}><Icons.Search /></span>
-            <input
-              value={searchQuery}
-              onChange={handleSearch}
-              placeholder="FUZZY SEARCH..."
-              className="flex-1 bg-transparent font-mono text-xs placeholder-current"
-              style={{ color: '#1a1a14', letterSpacing: '0.05em' }}
-            />
-            {searching ? (
-              <span className="font-mono text-xs" style={{ color: '#8a8070' }}><Icons.Loader /></span>
-            ) : searchQuery ? (
-              <button onClick={() => { setSearchQuery(''); fetchNotes(''); }} style={{ color: '#8a8070' }}>
-                <Icons.X />
-              </button>
-            ) : null}
-          </div>
-          {searchQuery && (
-            <div className="font-mono text-xs mt-1.5 px-1" style={{ color: '#8a8070' }}>
-              {notes.length} RESULT{notes.length !== 1 ? 'S' : ''} · LEVENSHTEIN
-            </div>
-          )}
-        </div>
-
-        {/* Create Note Button */}
-        <button
-          onClick={createNote}
-          className="flex items-center gap-2.5 px-4 py-2.5 font-orbitron text-xs tracking-widest transition-all hover:brightness-95"
-          style={{ background: '#1a1a14', color: '#f5f0e8', borderBottom: '1px solid #1a1a14' }}
-        >
-          <Icons.Plus />
-          NEW NOTE
-        </button>
-
-        {/* Note Navigation List */}
-        <div className="flex-1 overflow-y-auto">
-          {loadingNotes ? (
-            <div className="p-6 text-center font-mono text-xs flex items-center justify-center gap-2" style={{ color: '#8a8070' }}>
-              <Icons.Loader /> LOADING NODES...
-            </div>
-          ) : notes.length === 0 ? (
-            <div className="p-6 text-center font-mono text-xs" style={{ color: '#8a8070' }}>
-              NO NODES FOUND
-            </div>
-          ) : (
-            notes.map((note) => {
-              const id = note._id || note.id;
-              const title = note.title || 'Untitled Node';
-              const body = note.body || note.content || '';
-              const isSelected = activeId === id;
-
-              return (
-                <div
-                  key={id}
-                  onClick={() => setActiveId(id)}
-                  className="w-full text-left px-4 py-3 transition-all group relative cursor-pointer"
-                  style={{
-                    background: isSelected ? '#e8ede8' : 'transparent',
-                    borderBottom: '1px solid #d8d0c0',
-                    borderLeft: isSelected ? '2px solid #1a1a14' : '2px solid transparent',
-                  }}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span
-                      className="font-rajdhani font-semibold text-sm leading-tight flex-1 truncate"
-                      style={{ color: '#1a1a14' }}
-                    >
-                      {title}
-                    </span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); requestDelete(id); }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5"
-                      style={{ color: '#c0392b' }}
-                    >
-                      <Icons.Trash />
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
-                      {relativeTime(note.updatedAt || note.createdAt)}
-                    </span>
-                    <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
-                      {wordCount(body)}w
-                    </span>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-
-      {/* Main Note Editor Panel */}
-      <div className="flex flex-col overflow-hidden">
-        {activeNote ? (
-          <>
-            {/* Note Editor Header */}
-            <div
-              className="flex items-center gap-3 px-6 py-3"
-              style={{ borderBottom: '1px solid #d8d0c0', background: '#ede8dd' }}
-            >
-              <span style={{ color: '#8a8070' }}><Icons.Note /></span>
-              {editTitle ? (
-                <input
-                  ref={titleRef}
-                  value={titleDraft}
-                  onChange={(e) => setTitleDraft(e.target.value)}
-                  onBlur={commitTitle}
-                  onKeyDown={(e) => { if (e.key === 'Enter') commitTitle(); if (e.key === 'Escape') setEditTitle(false); }}
-                  className="flex-1 bg-transparent font-rajdhani font-bold text-lg"
-                  style={{ color: '#1a1a14', border: 'none', borderBottom: '1px solid #1a1a14' }}
-                />
-              ) : (
-                <button
-                  onClick={startEditTitle}
-                  className="flex-1 text-left font-rajdhani font-bold text-lg hover:opacity-70 transition-opacity"
-                  style={{ color: '#1a1a14' }}
-                >
-                  {activeNote.title}
-                </button>
-              )}
-              <div className="flex items-center gap-4 ml-auto">
-                <span className="font-mono text-xs flex items-center gap-1.5" style={{ color: '#8a8070' }}>
-                  <Icons.Word />
-                  {currentWordCount} words
-                </span>
-                <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
-                  {relativeTime(activeNote.updatedAt || activeNote.createdAt)}
-                </span>
-                <button
-                  onClick={() => saveNoteToDb(activeNote._id || activeNote.id, activeNote.title, noteContent)}
-                  className="flex items-center gap-2 px-3 py-1.5 font-orbitron text-xs tracking-wider transition-all hover:brightness-95"
-                  style={{ background: '#e8e2d6', border: '1px solid #d8d0c0', color: '#5a5548' }}
-                >
-                  <Icons.Save />
-                  SYNC
-                </button>
-                <button
-                  onClick={() => setShowAI((p) => !p)}
-                  className="flex items-center gap-2 px-3 py-1.5 font-orbitron text-xs tracking-wider transition-all"
-                  style={{
-                    background: showAI ? '#e8ede8' : '#e8e2d6',
-                    border: `1px solid ${showAI ? '#2e7d5240' : '#d8d0c0'}`,
-                    color: showAI ? '#2e7d52' : '#5a5548',
-                  }}
-                >
-                  <Icons.AI />
-                  AI
-                </button>
-              </div>
-            </div>
-
-            {/* Note Body Textarea */}
-            <textarea
-              ref={textareaRef}
-              value={noteContent}
-              onChange={(e) => updateContent(e.target.value)}
-              placeholder={"// BEGIN TRANSMISSION\n\nStart writing..."}
-              className="flex-1 resize-none p-6 font-rajdhani text-base leading-relaxed"
-              style={{
-                background: '#f5f0e8',
-                color: '#1a1a14',
-                caretColor: '#1a1a14',
-                letterSpacing: '0.02em',
-              }}
-            />
-
-            {/* Note Editor Status Bar */}
-            <div
-              className="flex items-center gap-4 px-6 py-1.5"
-              style={{ borderTop: '1px solid #d8d0c0', background: '#ede8dd' }}
-            >
-              <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
-                CREATED {new Date(activeNote.createdAt || Date.now()).toLocaleDateString()}
-              </span>
-              <span className="font-mono text-xs" style={{ color: '#8a8070' }}>·</span>
-              <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
-                {noteContent.split('\n').length} LINES
-              </span>
-              <span className="font-mono text-xs" style={{ color: '#8a8070' }}>·</span>
-              <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
-                {noteContent.length} CHARS
-              </span>
-              <div className="flex-1" />
-              <span className="font-mono text-xs flex items-center gap-1.5" style={{ color: '#8a8070' }}>
-                <span className="w-1 h-1 rounded-full" style={{ background: '#2e7d52', display: 'inline-block' }} />
-                UTF-8
-              </span>
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4">
-            <div className="font-orbitron text-2xl" style={{ color: '#1a1a14' }}>
-              NOTE<span style={{ color: '#c0392b' }}>FLOW</span>
-            </div>
-            <div className="font-mono text-xs" style={{ color: '#8a8070' }}>
-              SELECT A NODE OR CREATE NEW
-            </div>
+        {/* Mobile Navigation Tabs */}
+        {isMobile && (
+          <div className="flex items-center gap-1">
             <button
-              onClick={createNote}
-              className="flex items-center gap-2 px-5 py-2.5 font-orbitron text-xs tracking-widest mt-2 transition-all hover:brightness-95"
-              style={{ background: '#1a1a14', color: '#f5f0e8' }}
+              onClick={() => setMobileTab('nodes')}
+              className="px-2 py-1 font-orbitron text-xs"
+              style={{
+                background: mobileTab === 'nodes' ? '#1a1a14' : '#e8e2d6',
+                color: mobileTab === 'nodes' ? '#f5f0e8' : '#5a5548',
+                border: '1px solid #d8d0c0'
+              }}
             >
-              <Icons.Plus />
-              INITIALIZE NODE
+              NODES ({notes.length})
             </button>
+            <button
+              onClick={() => setMobileTab('editor')}
+              className="px-2 py-1 font-orbitron text-xs"
+              style={{
+                background: mobileTab === 'editor' ? '#1a1a14' : '#e8e2d6',
+                color: mobileTab === 'editor' ? '#f5f0e8' : '#5a5548',
+                border: '1px solid #d8d0c0'
+              }}
+            >
+              EDITOR
+            </button>
+            <button
+              onClick={() => setMobileTab('ai')}
+              className="px-2 py-1 font-orbitron text-xs"
+              style={{
+                background: mobileTab === 'ai' ? '#2e7d52' : '#e8e2d6',
+                color: mobileTab === 'ai' ? '#ffffff' : '#5a5548',
+                border: '1px solid #d8d0c0'
+              }}
+            >
+              AI
+            </button>
+          </div>
+        )}
+
+        {!isMobile && (
+          <div className="font-mono text-xs flex items-center gap-2" style={{ color: '#8a8070' }}>
+            <span className="w-1.5 h-1.5 rounded-full pulse-glow" style={{ background: dbStatus === 'CONNECTED' ? '#2e7d52' : '#c0392b', display: 'inline-block' }} />
+            MONGODB ATLAS · {dbStatus}
           </div>
         )}
       </div>
 
-      {/* Gemini AI Side Panel */}
-      {showAI && activeNote && (
-        <div
-          className="overflow-hidden flex flex-col slide-in"
-          style={{ width: 260, borderLeft: '1px solid #d8d0c0' }}
-        >
-          <AIPanel content={noteContent} onApply={applyAI} />
-        </div>
-      )}
+      {/* Workspace Area */}
+      <div className="col-span-3 flex w-full h-full overflow-hidden nf-main-workspace">
+
+        {/* Left Sidebar (Note List) */}
+        {(!isMobile || mobileTab === 'nodes') && (
+          <div
+            className="flex flex-col overflow-hidden nf-sidebar-pane"
+            style={{ width: isMobile ? '100%' : 260, borderRight: '1px solid #d8d0c0' }}
+          >
+            {/* Search Bar */}
+            <div className="p-3" style={{ borderBottom: '1px solid #d8d0c0' }}>
+              <div className="flex items-center gap-2 px-3 py-2" style={{ background: '#eae4d8', border: '1px solid #d8d0c0' }}>
+                <span style={{ color: '#8a8070' }}><Icons.Search /></span>
+                <input
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  placeholder="FUZZY SEARCH..."
+                  className="flex-1 bg-transparent font-mono text-xs placeholder-current"
+                  style={{ color: '#1a1a14', letterSpacing: '0.05em' }}
+                />
+                {searching ? (
+                  <span className="font-mono text-xs" style={{ color: '#8a8070' }}><Icons.Loader /></span>
+                ) : searchQuery ? (
+                  <button onClick={() => { setSearchQuery(''); fetchNotes(''); }} style={{ color: '#8a8070' }}>
+                    <Icons.X />
+                  </button>
+                ) : null}
+              </div>
+              {searchQuery && (
+                <div className="font-mono text-xs mt-1.5 px-1" style={{ color: '#8a8070' }}>
+                  {notes.length} RESULT{notes.length !== 1 ? 'S' : ''} · LEVENSHTEIN
+                </div>
+              )}
+            </div>
+
+            {/* Create Note Button */}
+            <button
+              onClick={createNote}
+              className="flex items-center gap-2.5 px-4 py-2.5 font-orbitron text-xs tracking-widest transition-all hover:brightness-95"
+              style={{ background: '#1a1a14', color: '#f5f0e8', borderBottom: '1px solid #1a1a14' }}
+            >
+              <Icons.Plus />
+              NEW NOTE
+            </button>
+
+            {/* Note Navigation List */}
+            <div className="flex-1 overflow-y-auto">
+              {loadingNotes ? (
+                <div className="p-6 text-center font-mono text-xs flex items-center justify-center gap-2" style={{ color: '#8a8070' }}>
+                  <Icons.Loader /> LOADING NODES...
+                </div>
+              ) : notes.length === 0 ? (
+                <div className="p-6 text-center font-mono text-xs" style={{ color: '#8a8070' }}>
+                  NO NODES FOUND
+                </div>
+              ) : (
+                notes.map((note) => {
+                  const id = note._id || note.id;
+                  const title = note.title || 'Untitled Node';
+                  const body = note.body || note.content || '';
+                  const isSelected = activeId === id;
+
+                  return (
+                    <div
+                      key={id}
+                      onClick={() => selectNote(id)}
+                      className="w-full text-left px-4 py-3 transition-all group relative cursor-pointer"
+                      style={{
+                        background: isSelected ? '#e8ede8' : 'transparent',
+                        borderBottom: '1px solid #d8d0c0',
+                        borderLeft: isSelected ? '2px solid #1a1a14' : '2px solid transparent',
+                      }}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span
+                          className="font-rajdhani font-semibold text-sm leading-tight flex-1 truncate"
+                          style={{ color: '#1a1a14' }}
+                        >
+                          {title}
+                        </span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); requestDelete(id); }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5"
+                          style={{ color: '#c0392b' }}
+                        >
+                          <Icons.Trash />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
+                          {relativeTime(note.updatedAt || note.createdAt)}
+                        </span>
+                        <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
+                          {wordCount(body)}w
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Main Note Editor Panel */}
+        {(!isMobile || mobileTab === 'editor') && (
+          <div className="flex-1 flex flex-col overflow-hidden nf-editor-pane">
+            {activeNote ? (
+              <>
+                {/* Note Editor Header */}
+                <div
+                  className="flex items-center gap-3 px-6 py-3 nf-editor-header"
+                  style={{ borderBottom: '1px solid #d8d0c0', background: '#ede8dd' }}
+                >
+                  {isMobile && (
+                    <button
+                      onClick={() => setMobileTab('nodes')}
+                      className="flex items-center gap-1 font-orbitron text-xs px-2 py-1"
+                      style={{ background: '#1a1a14', color: '#f5f0e8' }}
+                    >
+                      <Icons.Back /> NODES
+                    </button>
+                  )}
+                  <span style={{ color: '#8a8070' }}><Icons.Note /></span>
+                  {editTitle ? (
+                    <input
+                      ref={titleRef}
+                      value={titleDraft}
+                      onChange={(e) => setTitleDraft(e.target.value)}
+                      onBlur={commitTitle}
+                      onKeyDown={(e) => { if (e.key === 'Enter') commitTitle(); if (e.key === 'Escape') setEditTitle(false); }}
+                      className="flex-1 bg-transparent font-rajdhani font-bold text-lg"
+                      style={{ color: '#1a1a14', border: 'none', borderBottom: '1px solid #1a1a14' }}
+                    />
+                  ) : (
+                    <button
+                      onClick={startEditTitle}
+                      className="flex-1 text-left font-rajdhani font-bold text-lg hover:opacity-70 transition-opacity truncate"
+                      style={{ color: '#1a1a14' }}
+                    >
+                      {activeNote.title}
+                    </button>
+                  )}
+                  <div className="flex items-center gap-2 ml-auto">
+                    <span className="font-mono text-xs flex items-center gap-1.5" style={{ color: '#8a8070' }}>
+                      <Icons.Word />
+                      {currentWordCount}w
+                    </span>
+                    <button
+                      onClick={() => saveNoteToDb(activeNote._id || activeNote.id, activeNote.title, noteContent)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 font-orbitron text-xs tracking-wider transition-all hover:brightness-95"
+                      style={{ background: '#e8e2d6', border: '1px solid #d8d0c0', color: '#5a5548' }}
+                    >
+                      <Icons.Save />
+                      SYNC
+                    </button>
+                    {!isMobile && (
+                      <button
+                        onClick={() => setShowAI((p) => !p)}
+                        className="flex items-center gap-2 px-3 py-1.5 font-orbitron text-xs tracking-wider transition-all"
+                        style={{
+                          background: showAI ? '#e8ede8' : '#e8e2d6',
+                          border: `1px solid ${showAI ? '#2e7d5240' : '#d8d0c0'}`,
+                          color: showAI ? '#2e7d52' : '#5a5548',
+                        }}
+                      >
+                        <Icons.AI />
+                        AI
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Note Body Textarea */}
+                <textarea
+                  ref={textareaRef}
+                  value={noteContent}
+                  onChange={(e) => updateContent(e.target.value)}
+                  placeholder={"// BEGIN TRANSMISSION\n\nStart writing..."}
+                  className="flex-1 resize-none p-4 md:p-6 font-rajdhani text-base leading-relaxed"
+                  style={{
+                    background: '#f5f0e8',
+                    color: '#1a1a14',
+                    caretColor: '#1a1a14',
+                    letterSpacing: '0.02em',
+                  }}
+                />
+
+                {/* Note Editor Status Bar */}
+                <div
+                  className="flex items-center gap-3 px-4 py-1.5 flex-wrap"
+                  style={{ borderTop: '1px solid #d8d0c0', background: '#ede8dd' }}
+                >
+                  <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
+                    {noteContent.split('\n').length} L
+                  </span>
+                  <span className="font-mono text-xs" style={{ color: '#8a8070' }}>·</span>
+                  <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
+                    {noteContent.length} C
+                  </span>
+                  <div className="flex-1" />
+                  <span className="font-mono text-xs flex items-center gap-1.5" style={{ color: '#8a8070' }}>
+                    <span className="w-1 h-1 rounded-full" style={{ background: '#2e7d52', display: 'inline-block' }} />
+                    UTF-8
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6">
+                <div className="font-orbitron text-2xl" style={{ color: '#1a1a14' }}>
+                  NOTE<span style={{ color: '#c0392b' }}>FLOW</span>
+                </div>
+                <div className="font-mono text-xs text-center" style={{ color: '#8a8070' }}>
+                  SELECT A NODE OR CREATE NEW
+                </div>
+                <button
+                  onClick={createNote}
+                  className="flex items-center gap-2 px-5 py-2.5 font-orbitron text-xs tracking-widest mt-2 transition-all hover:brightness-95"
+                  style={{ background: '#1a1a14', color: '#f5f0e8' }}
+                >
+                  <Icons.Plus />
+                  INITIALIZE NODE
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Gemini AI Side Panel */}
+        {((!isMobile && showAI) || (isMobile && mobileTab === 'ai')) && activeNote && (
+          <div
+            className="overflow-hidden flex flex-col slide-in nf-ai-pane"
+            style={{ width: isMobile ? '100%' : 260, borderLeft: isMobile ? 'none' : '1px solid #d8d0c0' }}
+          >
+            <AIPanel content={noteContent} onApply={applyAI} />
+          </div>
+        )}
+      </div>
 
       {/* Modals & Toasts */}
       {confirmDelete && (
