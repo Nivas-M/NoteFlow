@@ -452,7 +452,6 @@ export default function App() {
         setNotes((prev) =>
           prev.map((n) => ((n._id === id || n.id === id) ? updated : n))
         );
-        addToast('Note synced to Atlas', 'success');
       }
     } catch {
       addToast('Auto-sync failed', 'error');
