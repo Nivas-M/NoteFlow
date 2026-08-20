@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import RichTextEditor from './RichTextEditor.jsx';
 
 /* ── Icons ─────────────────────────────────────── */
 function IconSparkle() {
@@ -339,13 +340,10 @@ export default function NoteForm() {
 
           <div className="nf-editor-divider" />
 
-          <textarea
-            id="note-body"
-            ref={bodyRef}
-            className="nf-body"
-            placeholder="Start writing…"
+          <RichTextEditor
             value={body}
-            onChange={(e) => { setBody(e.target.value); setErrors((p) => ({ ...p, body: '' })); }}
+            onChange={(val) => { setBody(val); setErrors((p) => ({ ...p, body: '' })); }}
+            placeholder="Start writing…"
           />
           {errors.body && <p className="nf-field-error">{errors.body}</p>}
 
@@ -358,7 +356,7 @@ export default function NoteForm() {
             </button>
             {body.trim() && (
               <span className="nf-word-count">
-                {body.trim().split(/\s+/).filter(Boolean).length} words
+                {body.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).filter(Boolean).length} words
               </span>
             )}
           </div>

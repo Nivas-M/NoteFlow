@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import RichTextEditor from './components/RichTextEditor.jsx';
 
-// Word counter helper
+// Word counter helper (strips HTML tags)
 function wordCount(text = '') {
-  return text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
+  const clean = text.replace(/<[^>]*>/g, ' ').trim();
+  return clean ? clean.split(/\s+/).filter(Boolean).length : 0;
 }
 
 // Relative timestamp formatter helper
@@ -790,19 +792,11 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Note Body Textarea */}
-                <textarea
-                  ref={textareaRef}
+                {/* Rich Text Editor with Minimal Bottom Formatting Toolbar */}
+                <RichTextEditor
                   value={noteContent}
-                  onChange={(e) => updateContent(e.target.value)}
-                  placeholder={"// BEGIN TRANSMISSION\n\nStart writing..."}
-                  className="flex-1 resize-none p-4 md:p-6 font-rajdhani text-base leading-relaxed"
-                  style={{
-                    background: '#f5f0e8',
-                    color: '#1a1a14',
-                    caretColor: '#1a1a14',
-                    letterSpacing: '0.02em',
-                  }}
+                  onChange={updateContent}
+                  placeholder="// BEGIN TRANSMISSION... Start writing..."
                 />
 
                 {/* Note Editor Status Bar */}

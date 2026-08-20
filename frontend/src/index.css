@@ -295,3 +295,152 @@ button:focus-visible { outline: 1px solid #00e5c4; outline-offset: 2px; }
     gap: 8px !important;
   }
 }
+
+/* ── Rich Text Editor & Bottom Toolbar Styles ────────── */
+.nf-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #5a5548;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nf-toolbar-btn:hover {
+  background: #eae4d8;
+  color: #1a1a14;
+  border-color: #d8d0c0;
+}
+
+.nf-toolbar-btn.active {
+  background: #1a1a14;
+  color: #f5f0e8;
+  border-color: #1a1a14;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.nf-editor-canvas:empty:before {
+  content: attr(data-placeholder);
+  color: #8a8070;
+  pointer-events: none;
+  display: block;
+}
+
+.nf-editor-canvas h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.nf-editor-canvas h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.nf-editor-canvas ul {
+  list-style-type: disc;
+  margin-left: 1.25rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.nf-editor-canvas ol {
+  list-style-type: decimal;
+  margin-left: 1.25rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.nf-editor-popover {
+  z-index: 50;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.hover\:scale-115:hover {
+  transform: scale(1.15);
+}
+
+/* ── Encapsulated Font Size Stepper Control [ 16 | + | - ] ────────── */
+.nf-font-stepper-container {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  background-color: #e8e2d6;
+  border: 1px solid #c8c0b0;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.nf-font-stepper-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 9px;
+  background-color: #dad2c2;
+  border-right: 1px solid #c8c0b0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1a14;
+  user-select: none;
+}
+
+.nf-font-stepper-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 100%;
+  background: transparent;
+  border: none;
+  font-weight: 700;
+  font-size: 13px;
+  color: #1a1a14;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.nf-font-stepper-btn:hover {
+  background-color: #d4ccbc;
+}
+
+.nf-font-stepper-btn + .nf-font-stepper-btn {
+  border-left: 1px solid #c8c0b0;
+}
+
+/* ── Horizontal Color Swatches Popover Above Button ────────── */
+.nf-color-popover-horizontal {
+  position: absolute !important;
+  bottom: calc(100% + 8px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background-color: #f5f0e8 !important;
+  border: 1px solid #c8c0b0 !important;
+  border-radius: 6px !important;
+  padding: 6px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+  z-index: 999999 !important;
+  animation: fadeIn 0.15s ease-out !important;
+}
+
+
+
+
