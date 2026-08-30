@@ -23,16 +23,21 @@ app.use('/api/ai',    aiRouter);
 // Health check endpoint
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
-// Connect to MongoDB Atlas database and start server
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('✅  MongoDB connected');
-    app.listen(PORT, () =>
-      console.log(`🚀  Server running on http://localhost:${PORT}`)
-    );
-  })
-  .catch((err) => {
-    console.error('❌  MongoDB connection failed:', err.message);
-    process.exit(1);
-  });
+// Connect to MongoDB Atlas database
+if (process.env.MONGO_URI) {
+  mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => {
+      console.log('✅  MongoDB connected');
+    })
+    .catch((err) => {
+      console.error('❌  MongoDB connection error:', err.message);
+    });
+} else {
+  console.warn('⚠️  MONGO_URI is not defined in .env');
+}
+
+// Start Express server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀  Server running on http://127.0.0.1:${PORT}`);
+});

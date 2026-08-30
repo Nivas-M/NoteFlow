@@ -85,6 +85,24 @@ const Icons = {
       <path d="M8 2L3 6.5L8 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" />
     </svg>
   ),
+  Sun: () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  ),
+  Moon: () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  ),
 };
 
 // Toast notification popups container
@@ -94,11 +112,11 @@ function ToastContainer({ toasts, remove }) {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="fade-in pointer-events-auto flex items-center gap-3 px-4 py-2.5 font-mono text-xs"
+          className="fade-in pointer-events-auto flex items-center gap-3 px-4 py-2.5 font-mono text-xs shadow-lg"
           style={{
-            background: t.type === 'error' ? '#fce8e6' : t.type === 'success' ? '#e8f0e8' : '#ede8dd',
-            border: `1px solid ${t.type === 'error' ? '#c0392b' : t.type === 'success' ? '#2e7d52' : '#d8d0c0'}`,
-            color: t.type === 'error' ? '#c0392b' : t.type === 'success' ? '#2e7d52' : '#5a5548',
+            background: t.type === 'error' ? 'var(--toast-bg-error, #fce8e6)' : t.type === 'success' ? 'var(--toast-bg-success, #e8f0e8)' : 'var(--bg-card)',
+            border: `1px solid ${t.type === 'error' ? 'var(--accent-red)' : t.type === 'success' ? 'var(--accent-green)' : 'var(--border-color)'}`,
+            color: t.type === 'error' ? 'var(--accent-red)' : t.type === 'success' ? 'var(--accent-green)' : 'var(--text-secondary)',
             minWidth: 240,
           }}
         >
@@ -115,27 +133,27 @@ function ToastContainer({ toasts, remove }) {
 // Confirmation modal for node deletion
 function ConfirmModal({ onConfirm, onCancel, title }) {
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center" style={{ background: 'rgba(7,9,14,0.85)' }}>
-      <div className="corner-brackets fade-in p-8 font-rajdhani" style={{ background: '#ede8dd', border: '1px solid #d8d0c0', minWidth: 320 }}>
-        <div className="font-orbitron text-xs tracking-widest mb-1" style={{ color: '#c0392b' }}>
+    <div className="fixed inset-0 z-40 flex items-center justify-center" style={{ background: 'var(--modal-backdrop)' }}>
+      <div className="corner-brackets fade-in p-8 font-rajdhani shadow-2xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', minWidth: 320 }}>
+        <div className="font-orbitron text-xs tracking-widest mb-1" style={{ color: 'var(--accent-red)' }}>
           ⚠ CONFIRM DELETION
         </div>
-        <div className="text-sm mb-6" style={{ color: '#8a8070' }}>
-          Delete <span style={{ color: '#1a1a14' }}>"{title}"</span>?<br />
+        <div className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+          Delete <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>"{title}"</span>?<br />
           This action cannot be undone.
         </div>
         <div className="flex gap-3">
           <button
             onClick={onConfirm}
             className="flex-1 py-2 font-orbitron text-xs tracking-widest transition-all hover:brightness-110"
-            style={{ background: '#c0392b', color: '#fff' }}
+            style={{ background: 'var(--accent-red)', color: '#fff' }}
           >
             DELETE
           </button>
           <button
             onClick={onCancel}
             className="flex-1 py-2 font-orbitron text-xs tracking-widest transition-all hover:bg-opacity-80"
-            style={{ background: '#e8e2d6', color: '#5a5548', border: '1px solid #d8d0c0' }}
+            style={{ background: 'var(--bg-btn)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
           >
             CANCEL
           </button>
@@ -206,14 +224,14 @@ function AIPanel({ content, onApply }) {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
-      <div className="px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid #d8d0c0' }}>
-        <div className="font-orbitron text-xs tracking-widest flex items-center gap-2" style={{ color: '#1a1a14' }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: 'var(--bg-sidebar)' }}>
+      <div className="px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <div className="font-orbitron text-xs tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
           <Icons.AI />
           <span>GEMINI AI</span>
-          <span className="cursor-blink ml-1" style={{ color: '#1a1a14' }}>_</span>
+          <span className="cursor-blink ml-1" style={{ color: 'var(--accent-green)' }}>_</span>
         </div>
-        <div className="font-mono text-xs mt-1" style={{ color: '#8a8070' }}>
+        <div className="font-mono text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
           google/gemini-1.5-flash · 7 tools
         </div>
       </div>
@@ -229,24 +247,24 @@ function AIPanel({ content, onApply }) {
               disabled={loading !== null || !content.trim()}
               className="flex items-center gap-3 px-3 py-2.5 text-left transition-all group disabled:opacity-40"
               style={{
-                background: activeTool === t.id ? '#e8ede8' : 'transparent',
-                border: `1px solid ${activeTool === t.id ? '#2e7d5240' : '#d8d0c0'}`,
+                background: activeTool === t.id ? 'var(--bg-active)' : 'transparent',
+                border: `1px solid ${activeTool === t.id ? 'var(--accent-green)' : 'var(--border-color)'}`,
               }}
             >
               <span
                 className="font-mono text-xs w-4 shrink-0 transition-colors"
-                style={{ color: activeTool === t.id ? '#2e7d52' : '#8a8070' }}
+                style={{ color: activeTool === t.id ? 'var(--accent-green)' : 'var(--text-muted)' }}
               >
                 {loading === t.id ? <Icons.Loader /> : t.shortcut}
               </span>
               <div className="flex-1 min-w-0">
                 <div
                   className="font-rajdhani font-semibold text-sm leading-none"
-                  style={{ color: activeTool === t.id ? '#2e7d52' : '#1a1a14' }}
+                  style={{ color: activeTool === t.id ? 'var(--accent-green)' : 'var(--text-primary)' }}
                 >
                   {t.label}
                 </div>
-                <div className="font-mono text-xs mt-0.5 truncate" style={{ color: '#8a8070' }}>
+                <div className="font-mono text-xs mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>
                   {t.desc}
                 </div>
               </div>
@@ -254,13 +272,13 @@ function AIPanel({ content, onApply }) {
 
             {/* Translation language selector */}
             {activeTool === 'translate' && t.id === 'translate' && (
-              <div className="p-2 flex flex-col gap-2 fade-in" style={{ background: '#eae4d8', border: '1px solid #d8d0c0' }}>
-                <label className="font-mono text-xs" style={{ color: '#5a5548' }}>TARGET LANGUAGE:</label>
+              <div className="p-2 flex flex-col gap-2 fade-in" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)' }}>
+                <label className="font-mono text-xs" style={{ color: 'var(--text-secondary)' }}>TARGET LANGUAGE:</label>
                 <select
                   value={targetLang}
                   onChange={(e) => setTargetLang(e.target.value)}
-                  className="p-1 font-mono text-xs bg-white border border-gray-300 rounded"
-                  style={{ color: '#1a1a14' }}
+                  className="p-1 font-mono text-xs rounded"
+                  style={{ background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
                 >
                   <option value="Spanish">Spanish</option>
                   <option value="French">French</option>
@@ -272,8 +290,8 @@ function AIPanel({ content, onApply }) {
                 <button
                   onClick={() => runTool('translate')}
                   disabled={loading !== null || !content.trim()}
-                  className="py-1 px-2 font-orbitron text-xs tracking-wider text-white"
-                  style={{ background: '#1a1a14' }}
+                  className="py-1 px-2 font-orbitron text-xs tracking-wider transition-all hover:brightness-110"
+                  style={{ background: 'var(--bg-btn-primary)', color: 'var(--text-btn-primary)' }}
                 >
                   TRANSLATE
                 </button>
@@ -282,21 +300,21 @@ function AIPanel({ content, onApply }) {
 
             {/* Q&A question input prompt */}
             {activeTool === 'ask' && t.id === 'ask' && (
-              <div className="p-2 flex flex-col gap-2 fade-in" style={{ background: '#eae4d8', border: '1px solid #d8d0c0' }}>
-                <label className="font-mono text-xs" style={{ color: '#5a5548' }}>ASK A QUESTION:</label>
+              <div className="p-2 flex flex-col gap-2 fade-in" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)' }}>
+                <label className="font-mono text-xs" style={{ color: 'var(--text-secondary)' }}>ASK A QUESTION:</label>
                 <input
                   type="text"
                   value={userQuestion}
                   onChange={(e) => setUserQuestion(e.target.value)}
                   placeholder="What is this note about?"
-                  className="p-1.5 font-mono text-xs bg-white border border-gray-300 rounded"
-                  style={{ color: '#1a1a14' }}
+                  className="p-1.5 font-mono text-xs rounded"
+                  style={{ background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
                 />
                 <button
                   onClick={() => runTool('ask')}
                   disabled={loading !== null || !content.trim() || !userQuestion.trim()}
-                  className="py-1 px-2 font-orbitron text-xs tracking-wider text-white"
-                  style={{ background: '#1a1a14' }}
+                  className="py-1 px-2 font-orbitron text-xs tracking-wider transition-all hover:brightness-110"
+                  style={{ background: 'var(--bg-btn-primary)', color: 'var(--text-btn-primary)' }}
                 >
                   SUBMIT QUESTION
                 </button>
@@ -308,20 +326,20 @@ function AIPanel({ content, onApply }) {
 
       {/* AI output display box */}
       {result && (
-        <div className="flex-1 flex flex-col mx-3 mb-3 overflow-hidden slide-in" style={{ border: '1px solid #d8d0c0', minHeight: 140 }}>
-          <div className="flex items-center justify-between px-3 py-2 shrink-0" style={{ borderBottom: '1px solid #d8d0c0', background: '#eae4d8' }}>
-            <span className="font-mono text-xs" style={{ color: '#2e7d52' }}>OUTPUT</span>
+        <div className="flex-1 flex flex-col mx-3 mb-3 overflow-hidden slide-in" style={{ border: '1px solid var(--border-color)', minHeight: 140 }}>
+          <div className="flex items-center justify-between px-3 py-2 shrink-0" style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card)' }}>
+            <span className="font-mono text-xs font-bold" style={{ color: 'var(--accent-green)' }}>OUTPUT</span>
             <button
               onClick={() => { onApply(result); setResult(''); }}
-              className="font-orbitron text-xs tracking-wider px-3 py-1 transition-all hover:brightness-95"
-              style={{ background: '#1a1a14', color: '#f5f0e8' }}
+              className="font-orbitron text-xs tracking-wider px-3 py-1 transition-all hover:brightness-110"
+              style={{ background: 'var(--bg-btn-primary)', color: 'var(--text-btn-primary)' }}
             >
               APPLY
             </button>
           </div>
           <div
             className="flex-1 overflow-y-auto p-3 font-rajdhani text-sm leading-relaxed"
-            style={{ color: '#5a5548', background: '#f5f0e8' }}
+            style={{ color: 'var(--text-secondary)', background: 'var(--bg-app)' }}
           >
             {result}
           </div>
@@ -333,6 +351,12 @@ function AIPanel({ content, onApply }) {
 
 // Main NoteFlow application root component
 export default function App() {
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('noteflow-theme');
+    if (saved === 'dark' || saved === 'light') return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
   const [notes, setNotes] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -349,6 +373,17 @@ export default function App() {
   const titleRef = useRef(null);
   const textareaRef = useRef(null);
   const saveTimerRef = useRef(null);
+
+  // Sync theme with document element and local storage
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('noteflow-theme', theme);
+  }, [theme]);
+
+  // Toggle between light and dark themes
+  function toggleTheme() {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }
 
   // Responsive window resize listener
   useEffect(() => {
@@ -450,7 +485,13 @@ export default function App() {
       if (res.ok) {
         const updated = await res.json();
         setNotes((prev) =>
-          prev.map((n) => ((n._id === id || n.id === id) ? updated : n))
+          prev.map((n) => {
+            if (n._id === id || n.id === id) {
+              // Preserve the latest in-memory body while merging server metadata
+              return { ...updated, body: n.body };
+            }
+            return n;
+          })
         );
       }
     } catch {
@@ -556,20 +597,36 @@ export default function App() {
         display: 'grid',
         gridTemplateColumns: '260px 1fr auto',
         gridTemplateRows: '40px 1fr',
-        background: '#f5f0e8'
+        background: 'var(--bg-app)',
+        color: 'var(--text-primary)'
       }}
     >
       {/* Top bar HUD */}
       <div
         className="col-span-3 flex items-center px-4 gap-4 nf-top-bar"
-        style={{ borderBottom: '1px solid #d8d0c0', background: '#ede8dd' }}
+        style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-header)' }}
       >
-        <div className="font-orbitron text-sm tracking-widest flex items-center gap-2" style={{ color: '#1a1a14' }}>
-          <span>NOTE<span style={{ color: '#c0392b' }}>FLOW</span></span>
-          <span className="font-mono text-xs" style={{ color: '#8a8070' }}>v2.4.1</span>
+        <div className="font-orbitron text-sm tracking-widest flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          <span>NOTE<span style={{ color: 'var(--accent-red)' }}>FLOW</span></span>
+          <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>v2.4.1</span>
         </div>
 
         <div className="flex-1" />
+
+        {/* Dark / Light Mode Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          className="flex items-center gap-1.5 px-2.5 py-1 font-orbitron text-xs tracking-wider transition-all hover:brightness-110"
+          style={{
+            background: 'var(--bg-btn)',
+            border: '1px solid var(--border-color)',
+            color: 'var(--text-primary)',
+          }}
+        >
+          {theme === 'dark' ? <Icons.Sun /> : <Icons.Moon />}
+          <span className="hidden sm:inline">{theme === 'dark' ? 'LIGHT' : 'DARK'}</span>
+        </button>
 
         {/* Mobile Navigation Tabs */}
         {isMobile && (
@@ -578,9 +635,9 @@ export default function App() {
               onClick={() => setMobileTab('nodes')}
               className="px-2 py-1 font-orbitron text-xs"
               style={{
-                background: mobileTab === 'nodes' ? '#1a1a14' : '#e8e2d6',
-                color: mobileTab === 'nodes' ? '#f5f0e8' : '#5a5548',
-                border: '1px solid #d8d0c0'
+                background: mobileTab === 'nodes' ? 'var(--bg-btn-primary)' : 'var(--bg-btn)',
+                color: mobileTab === 'nodes' ? 'var(--text-btn-primary)' : 'var(--text-secondary)',
+                border: '1px solid var(--border-color)'
               }}
             >
               NODES ({notes.length})
@@ -589,9 +646,9 @@ export default function App() {
               onClick={() => setMobileTab('editor')}
               className="px-2 py-1 font-orbitron text-xs"
               style={{
-                background: mobileTab === 'editor' ? '#1a1a14' : '#e8e2d6',
-                color: mobileTab === 'editor' ? '#f5f0e8' : '#5a5548',
-                border: '1px solid #d8d0c0'
+                background: mobileTab === 'editor' ? 'var(--bg-btn-primary)' : 'var(--bg-btn)',
+                color: mobileTab === 'editor' ? 'var(--text-btn-primary)' : 'var(--text-secondary)',
+                border: '1px solid var(--border-color)'
               }}
             >
               EDITOR
@@ -600,9 +657,9 @@ export default function App() {
               onClick={() => setMobileTab('ai')}
               className="px-2 py-1 font-orbitron text-xs"
               style={{
-                background: mobileTab === 'ai' ? '#2e7d52' : '#e8e2d6',
-                color: mobileTab === 'ai' ? '#ffffff' : '#5a5548',
-                border: '1px solid #d8d0c0'
+                background: mobileTab === 'ai' ? 'var(--accent-green)' : 'var(--bg-btn)',
+                color: mobileTab === 'ai' ? '#ffffff' : 'var(--text-secondary)',
+                border: '1px solid var(--border-color)'
               }}
             >
               AI
@@ -611,8 +668,8 @@ export default function App() {
         )}
 
         {!isMobile && (
-          <div className="font-mono text-xs flex items-center gap-2" style={{ color: '#8a8070' }}>
-            <span className="w-1.5 h-1.5 rounded-full pulse-glow" style={{ background: dbStatus === 'CONNECTED' ? '#2e7d52' : '#c0392b', display: 'inline-block' }} />
+          <div className="font-mono text-xs flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+            <span className="w-1.5 h-1.5 rounded-full pulse-glow" style={{ background: dbStatus === 'CONNECTED' ? 'var(--accent-green)' : 'var(--accent-red)', display: 'inline-block' }} />
             MONGODB ATLAS · {dbStatus}
           </div>
         )}
@@ -625,29 +682,29 @@ export default function App() {
         {(!isMobile || mobileTab === 'nodes') && (
           <div
             className="flex flex-col overflow-hidden nf-sidebar-pane"
-            style={{ width: isMobile ? '100%' : 260, borderRight: '1px solid #d8d0c0' }}
+            style={{ width: isMobile ? '100%' : 260, borderRight: '1px solid var(--border-color)', background: 'var(--bg-sidebar)' }}
           >
             {/* Search Bar */}
-            <div className="p-3" style={{ borderBottom: '1px solid #d8d0c0' }}>
-              <div className="flex items-center gap-2 px-3 py-2" style={{ background: '#eae4d8', border: '1px solid #d8d0c0' }}>
-                <span style={{ color: '#8a8070' }}><Icons.Search /></span>
+            <div className="p-3" style={{ borderBottom: '1px solid var(--border-color)' }}>
+              <div className="flex items-center gap-2 px-3 py-2" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)' }}>
+                <span style={{ color: 'var(--text-muted)' }}><Icons.Search /></span>
                 <input
                   value={searchQuery}
                   onChange={handleSearch}
                   placeholder="FUZZY SEARCH..."
                   className="flex-1 bg-transparent font-mono text-xs placeholder-current"
-                  style={{ color: '#1a1a14', letterSpacing: '0.05em' }}
+                  style={{ color: 'var(--text-primary)', letterSpacing: '0.05em' }}
                 />
                 {searching ? (
-                  <span className="font-mono text-xs" style={{ color: '#8a8070' }}><Icons.Loader /></span>
+                  <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}><Icons.Loader /></span>
                 ) : searchQuery ? (
-                  <button onClick={() => { setSearchQuery(''); fetchNotes(''); }} style={{ color: '#8a8070' }}>
+                  <button onClick={() => { setSearchQuery(''); fetchNotes(''); }} style={{ color: 'var(--text-muted)' }}>
                     <Icons.X />
                   </button>
                 ) : null}
               </div>
               {searchQuery && (
-                <div className="font-mono text-xs mt-1.5 px-1" style={{ color: '#8a8070' }}>
+                <div className="font-mono text-xs mt-1.5 px-1" style={{ color: 'var(--text-muted)' }}>
                   {notes.length} RESULT{notes.length !== 1 ? 'S' : ''} · LEVENSHTEIN
                 </div>
               )}
@@ -656,8 +713,8 @@ export default function App() {
             {/* Create Note Button */}
             <button
               onClick={createNote}
-              className="flex items-center gap-2.5 px-4 py-2.5 font-orbitron text-xs tracking-widest transition-all hover:brightness-95"
-              style={{ background: '#1a1a14', color: '#f5f0e8', borderBottom: '1px solid #1a1a14' }}
+              className="flex items-center gap-2.5 px-4 py-2.5 font-orbitron text-xs tracking-widest transition-all hover:brightness-110"
+              style={{ background: 'var(--bg-btn-primary)', color: 'var(--text-btn-primary)', borderBottom: '1px solid var(--border-color)' }}
             >
               <Icons.Plus />
               NEW NOTE
@@ -666,11 +723,11 @@ export default function App() {
             {/* Note Navigation List */}
             <div className="flex-1 overflow-y-auto">
               {loadingNotes ? (
-                <div className="p-6 text-center font-mono text-xs flex items-center justify-center gap-2" style={{ color: '#8a8070' }}>
+                <div className="p-6 text-center font-mono text-xs flex items-center justify-center gap-2" style={{ color: 'var(--text-muted)' }}>
                   <Icons.Loader /> LOADING NODES...
                 </div>
               ) : notes.length === 0 ? (
-                <div className="p-6 text-center font-mono text-xs" style={{ color: '#8a8070' }}>
+                <div className="p-6 text-center font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
                   NO NODES FOUND
                 </div>
               ) : (
@@ -686,31 +743,31 @@ export default function App() {
                       onClick={() => selectNote(id)}
                       className="w-full text-left px-4 py-3 transition-all group relative cursor-pointer"
                       style={{
-                        background: isSelected ? '#e8ede8' : 'transparent',
-                        borderBottom: '1px solid #d8d0c0',
-                        borderLeft: isSelected ? '2px solid #1a1a14' : '2px solid transparent',
+                        background: isSelected ? 'var(--bg-active)' : 'transparent',
+                        borderBottom: '1px solid var(--border-color)',
+                        borderLeft: isSelected ? '2px solid var(--accent-green)' : '2px solid transparent',
                       }}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <span
                           className="font-rajdhani font-semibold text-sm leading-tight flex-1 truncate"
-                          style={{ color: '#1a1a14' }}
+                          style={{ color: 'var(--text-primary)' }}
                         >
                           {title}
                         </span>
                         <button
                           onClick={(e) => { e.stopPropagation(); requestDelete(id); }}
                           className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5"
-                          style={{ color: '#c0392b' }}
+                          style={{ color: 'var(--accent-red)' }}
                         >
                           <Icons.Trash />
                         </button>
                       </div>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
+                        <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
                           {relativeTime(note.updatedAt || note.createdAt)}
                         </span>
-                        <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
+                        <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
                           {wordCount(body)}w
                         </span>
                       </div>
@@ -724,24 +781,24 @@ export default function App() {
 
         {/* Main Note Editor Panel */}
         {(!isMobile || mobileTab === 'editor') && (
-          <div className="flex-1 flex flex-col overflow-hidden nf-editor-pane">
+          <div className="flex-1 flex flex-col overflow-hidden nf-editor-pane" style={{ background: 'var(--bg-app)' }}>
             {activeNote ? (
               <>
                 {/* Note Editor Header */}
                 <div
                   className="flex items-center gap-3 px-6 py-3 nf-editor-header"
-                  style={{ borderBottom: '1px solid #d8d0c0', background: '#ede8dd' }}
+                  style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-header)' }}
                 >
                   {isMobile && (
                     <button
                       onClick={() => setMobileTab('nodes')}
                       className="flex items-center gap-1 font-orbitron text-xs px-2 py-1"
-                      style={{ background: '#1a1a14', color: '#f5f0e8' }}
+                      style={{ background: 'var(--bg-btn-primary)', color: 'var(--text-btn-primary)' }}
                     >
                       <Icons.Back /> NODES
                     </button>
                   )}
-                  <span style={{ color: '#8a8070' }}><Icons.Note /></span>
+                  <span style={{ color: 'var(--text-muted)' }}><Icons.Note /></span>
                   {editTitle ? (
                     <input
                       ref={titleRef}
@@ -749,27 +806,28 @@ export default function App() {
                       onChange={(e) => setTitleDraft(e.target.value)}
                       onBlur={commitTitle}
                       onKeyDown={(e) => { if (e.key === 'Enter') commitTitle(); if (e.key === 'Escape') setEditTitle(false); }}
-                      className="flex-1 bg-transparent font-rajdhani font-bold text-lg"
-                      style={{ color: '#1a1a14', border: 'none', borderBottom: '1px solid #1a1a14' }}
+                      placeholder="Untitled Node"
+                      className="flex-1 bg-transparent font-rajdhani font-bold text-lg outline-none"
+                      style={{ color: 'var(--text-primary)', background: 'transparent', border: 'none', borderBottom: '1px solid var(--accent-green)', padding: 0 }}
                     />
                   ) : (
                     <button
                       onClick={startEditTitle}
-                      className="flex-1 text-left font-rajdhani font-bold text-lg hover:opacity-70 transition-opacity truncate"
-                      style={{ color: '#1a1a14' }}
+                      className="flex-1 text-left font-rajdhani font-bold text-lg hover:opacity-70 transition-opacity truncate bg-transparent cursor-pointer"
+                      style={{ color: 'var(--text-primary)', background: 'transparent', border: 'none', padding: 0 }}
                     >
-                      {activeNote.title}
+                      {activeNote.title || 'Untitled Node'}
                     </button>
                   )}
                   <div className="flex items-center gap-2 ml-auto">
-                    <span className="font-mono text-xs flex items-center gap-1.5" style={{ color: '#8a8070' }}>
+                    <span className="font-mono text-xs flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                       <Icons.Word />
                       {currentWordCount}w
                     </span>
                     <button
                       onClick={() => saveNoteToDb(activeNote._id || activeNote.id, activeNote.title, noteContent)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 font-orbitron text-xs tracking-wider transition-all hover:brightness-95"
-                      style={{ background: '#e8e2d6', border: '1px solid #d8d0c0', color: '#5a5548' }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 font-orbitron text-xs tracking-wider transition-all hover:brightness-110"
+                      style={{ background: 'var(--bg-btn)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
                     >
                       <Icons.Save />
                       SYNC
@@ -779,9 +837,9 @@ export default function App() {
                         onClick={() => setShowAI((p) => !p)}
                         className="flex items-center gap-2 px-3 py-1.5 font-orbitron text-xs tracking-wider transition-all"
                         style={{
-                          background: showAI ? '#e8ede8' : '#e8e2d6',
-                          border: `1px solid ${showAI ? '#2e7d5240' : '#d8d0c0'}`,
-                          color: showAI ? '#2e7d52' : '#5a5548',
+                          background: showAI ? 'var(--bg-active)' : 'var(--bg-btn)',
+                          border: `1px solid ${showAI ? 'var(--accent-green)' : 'var(--border-color)'}`,
+                          color: showAI ? 'var(--accent-green)' : 'var(--text-secondary)',
                         }}
                       >
                         <Icons.AI />
@@ -793,6 +851,7 @@ export default function App() {
 
                 {/* Rich Text Editor with Minimal Bottom Formatting Toolbar */}
                 <RichTextEditor
+                  key={activeId}
                   value={noteContent}
                   onChange={updateContent}
                   placeholder="// BEGIN TRANSMISSION... Start writing..."
@@ -801,34 +860,34 @@ export default function App() {
                 {/* Note Editor Status Bar */}
                 <div
                   className="flex items-center gap-3 px-4 py-1.5 flex-wrap"
-                  style={{ borderTop: '1px solid #d8d0c0', background: '#ede8dd' }}
+                  style={{ borderTop: '1px solid var(--border-color)', background: 'var(--bg-header)' }}
                 >
-                  <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
+                  <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
                     {noteContent.split('\n').length} L
                   </span>
-                  <span className="font-mono text-xs" style={{ color: '#8a8070' }}>·</span>
-                  <span className="font-mono text-xs" style={{ color: '#8a8070' }}>
+                  <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>·</span>
+                  <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
                     {noteContent.length} C
                   </span>
                   <div className="flex-1" />
-                  <span className="font-mono text-xs flex items-center gap-1.5" style={{ color: '#8a8070' }}>
-                    <span className="w-1 h-1 rounded-full" style={{ background: '#2e7d52', display: 'inline-block' }} />
+                  <span className="font-mono text-xs flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                    <span className="w-1 h-1 rounded-full" style={{ background: 'var(--accent-green)', display: 'inline-block' }} />
                     UTF-8
                   </span>
                 </div>
               </>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6">
-                <div className="font-orbitron text-2xl" style={{ color: '#1a1a14' }}>
-                  NOTE<span style={{ color: '#c0392b' }}>FLOW</span>
+                <div className="font-orbitron text-2xl" style={{ color: 'var(--text-primary)' }}>
+                  NOTE<span style={{ color: 'var(--accent-red)' }}>FLOW</span>
                 </div>
-                <div className="font-mono text-xs text-center" style={{ color: '#8a8070' }}>
+                <div className="font-mono text-xs text-center" style={{ color: 'var(--text-muted)' }}>
                   SELECT A NODE OR CREATE NEW
                 </div>
                 <button
                   onClick={createNote}
-                  className="flex items-center gap-2 px-5 py-2.5 font-orbitron text-xs tracking-widest mt-2 transition-all hover:brightness-95"
-                  style={{ background: '#1a1a14', color: '#f5f0e8' }}
+                  className="flex items-center gap-2 px-5 py-2.5 font-orbitron text-xs tracking-widest mt-2 transition-all hover:brightness-110"
+                  style={{ background: 'var(--bg-btn-primary)', color: 'var(--text-btn-primary)' }}
                 >
                   <Icons.Plus />
                   INITIALIZE NODE
@@ -842,7 +901,7 @@ export default function App() {
         {((!isMobile && showAI) || (isMobile && mobileTab === 'ai')) && activeNote && (
           <div
             className="overflow-hidden flex flex-col slide-in nf-ai-pane"
-            style={{ width: isMobile ? '100%' : 260, borderLeft: isMobile ? 'none' : '1px solid #d8d0c0' }}
+            style={{ width: isMobile ? '100%' : 260, borderLeft: isMobile ? 'none' : '1px solid var(--border-color)' }}
           >
             <AIPanel content={noteContent} onApply={applyAI} />
           </div>

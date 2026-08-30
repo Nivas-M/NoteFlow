@@ -123,7 +123,7 @@ const HIGHLIGHT_COLORS = [
 
 export default function RichTextEditor({ value = '', onChange, placeholder = 'Start writing…' }) {
   const editorRef = useRef(null);
-  const isInternalChangeRef = useRef(false);
+  const lastEmittedHtmlRef = useRef(value || '');
 
   const [fontSize, setFontSize] = useState(16);
   const [textColor, setTextColor] = useState('#1a1a14');
@@ -146,12 +146,33 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
 
   // Keep editor content in sync with incoming value from parent prop
   useEffect(() => {
-    if (editorRef.current && !isInternalChangeRef.current) {
-      if (editorRef.current.innerHTML !== value) {
-        editorRef.current.innerHTML = value || '';
+    if (!editorRef.current) return;
+
+    // Skip DOM updates if value matches what we already have or just emitted
+    if (value === lastEmittedHtmlRef.current || value === editorRef.current.innerHTML) {
+      return;
+    }
+
+    const isFocused = document.activeElement === editorRef.current || editorRef.current.contains(document.activeElement);
+
+    if (!isFocused) {
+      editorRef.current.innerHTML = value || '';
+      lastEmittedHtmlRef.current = value || '';
+    } else {
+      // Programmatic external update while focused (e.g. AI tool apply or undo action)
+      editorRef.current.innerHTML = value || '';
+      lastEmittedHtmlRef.current = value || '';
+      try {
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(editorRef.current);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } catch {
+        // Selection fallback
       }
     }
-    isInternalChangeRef.current = false;
   }, [value]);
 
   // Execute formatting command safely
@@ -221,8 +242,8 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
   // Handle content changes
   const handleInput = () => {
     if (editorRef.current) {
-      isInternalChangeRef.current = true;
       const html = editorRef.current.innerHTML;
+      lastEmittedHtmlRef.current = html;
       if (onChange) {
         onChange(html);
       }
@@ -266,7 +287,7 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
   }, []);
 
   return (
-    <div className="nf-rich-editor-box flex-1 flex flex-col relative overflow-hidden bg-[#f5f0e8]">
+    <div className="nf-rich-editor-box flex-1 flex flex-col relative overflow-hidden">
       {/* Scrollable Editable Canvas */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 relative flex flex-col">
         <div
@@ -281,14 +302,14 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
           className="nf-rich-editor-canvas flex-1 outline-none font-rajdhani text-base leading-relaxed"
           style={{
             minHeight: '220px',
-            color: '#1a1a14',
-            caretColor: '#1a1a14',
+            color: 'var(--text-primary)',
+            caretColor: 'var(--text-primary)',
           }}
         />
       </div>
 
       {/* Minimal Bottom Formatting Toolbar Navigation Bar inside notepad box */}
-      <div className="nf-editor-bottom-nav flex items-center gap-1 px-3 py-2 border-t border-[#d8d0c0] bg-[#ede8dd] relative z-20 flex-wrap shrink-0">
+      <div className="nf-editor-bottom-nav flex items-center gap-1 px-3 py-2 border-t relative z-20 flex-wrap shrink-0">
         
         {/* Font Family Popover */}
         <div className="relative">
@@ -301,15 +322,15 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
             <ToolbarIcons.FontFamily />
           </button>
           {openPopover === 'font' && (
-            <div className="nf-editor-popover absolute bottom-full left-0 mb-2 bg-[#f5f0e8] border border-[#d8d0c0] shadow-lg rounded p-1 flex flex-col gap-1 min-w-[140px]">
-              <div className="text-[10px] font-mono px-2 py-1 text-[#8a8070] border-b border-[#d8d0c0]">SELECT FONT</div>
+            <div className="nf-editor-popover absolute bottom-full left-0 mb-2 shadow-lg rounded p-1 flex flex-col gap-1 min-w-[140px]" style={{ background: 'var(--bg-popover)', border: '1px solid var(--border-color)' }}>
+              <div className="text-[10px] font-mono px-2 py-1 border-b" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-color)' }}>SELECT FONT</div>
               {FONTS.map((f) => (
                 <button
                   key={f.name}
                   type="button"
                   onClick={() => { execCmd('fontName', f.value); setOpenPopover(null); }}
-                  className="text-left px-2 py-1.5 text-xs hover:bg-[#eae4d8] transition-colors rounded"
-                  style={{ fontFamily: f.value }}
+                  className="text-left px-2 py-1.5 text-xs transition-colors rounded hover:opacity-80"
+                  style={{ fontFamily: f.value, color: 'var(--text-primary)', background: 'transparent' }}
                 >
                   {f.name}
                 </button>
@@ -341,7 +362,7 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
           </button>
         </div>
 
-        <div className="w-[1px] h-4 bg-[#d8d0c0] mx-1" />
+        <div className="w-[1px] h-4 mx-1" style={{ background: 'var(--border-color)' }} />
 
         {/* Bold */}
         <button
@@ -383,7 +404,7 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
           <ToolbarIcons.Strikethrough />
         </button>
 
-        <div className="w-[1px] h-4 bg-[#d8d0c0] mx-1" />
+        <div className="w-[1px] h-4 mx-1" style={{ background: 'var(--border-color)' }} />
 
         {/* Headings */}
         <button
@@ -404,7 +425,7 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
           <ToolbarIcons.H2 />
         </button>
 
-        <div className="w-[1px] h-4 bg-[#d8d0c0] mx-1" />
+        <div className="w-[1px] h-4 mx-1" style={{ background: 'var(--border-color)' }} />
 
         {/* Bullet List */}
         <button
@@ -426,7 +447,7 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
           <ToolbarIcons.ListOrdered />
         </button>
 
-        <div className="w-[1px] h-4 bg-[#d8d0c0] mx-1" />
+        <div className="w-[1px] h-4 mx-1" style={{ background: 'var(--border-color)' }} />
 
         {/* Alignment */}
         <button
@@ -454,7 +475,7 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
           <ToolbarIcons.AlignRight />
         </button>
 
-        <div className="w-[1px] h-4 bg-[#d8d0c0] mx-1" />
+        <div className="w-[1px] h-4 mx-1" style={{ background: 'var(--border-color)' }} />
 
         {/* Font Color Cube Button & Horizontal Palette Popover */}
         <div className="relative inline-flex items-center">
@@ -477,7 +498,7 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'St
                   key={c}
                   type="button"
                   onClick={() => { applyTextColor(c); setOpenPopover(null); }}
-                  className={`w-5 h-5 rounded-[3px] border transition-transform hover:scale-125 flex items-center justify-center ${textColor === c ? 'ring-2 ring-[#1a1a14] ring-offset-1 border-transparent scale-110' : 'border-black/20'}`}
+                  className={`w-5 h-5 rounded-[3px] border transition-transform hover:scale-125 flex items-center justify-center ${textColor === c ? 'ring-2 ring-[var(--accent-green)] ring-offset-1 border-transparent scale-110' : 'border-black/20'}`}
                   style={{ backgroundColor: c }}
                   title={c}
                 >
